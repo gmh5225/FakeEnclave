@@ -157,6 +157,8 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
     PETHREAD pCurThread = KeGetCurrentThread();
     short uOldSpecialApcDisable = *(short *)((PUCHAR)pCurThread + SpecialApcDisable_17763_OFFSET);
 
+    *(short *)((PUCHAR)pCurThread + SpecialApcDisable_17763_OFFSET) = 0;
+
     int ns = 0;
     auto pVAD = (PMMVAD_SHORT_17763)pMiObtainReferencedVadEx(pFirstPage, 2, &ns);
 
@@ -167,10 +169,15 @@ DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
     dprintf("pVAD=%p\n", pVAD);
     if (pVAD)
     {
+        dprintf("pVAD->u.VadFlags.PrivateMemory=%d\n", pVAD->u.VadFlags.PrivateMemory);
+        dprintf("pVAD->u.VadFlags.Graphics=%d\n", pVAD->u.VadFlags.Graphics);
+        dprintf("pVAD->u.VadFlags.Enclave=%d\n", pVAD->u.VadFlags.Enclave);
+
+        pVAD->u.VadFlags.PrivateMemory = 1;
         pVAD->u.VadFlags.Graphics = 1;
         pVAD->u.VadFlags.Enclave = 1;
         dprintf("fake world!\n");
     }
 
-    return 0;
+    return STATUS_VIRUS_INFECTED;
 }
